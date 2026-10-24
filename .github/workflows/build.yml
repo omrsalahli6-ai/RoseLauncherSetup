@@ -1,0 +1,33 @@
+name: Build RoseLauncher Setup
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: PyInstaller kur
+        run: python -m pip install --upgrade pyinstaller
+
+      - name: RoseLauncher.exe olustur
+        run: python -m PyInstaller --noconfirm --clean --onefile --noconsole --icon RoseLauncher.ico --name RoseLauncher rose_launcher.py
+
+      - name: Inno Setup kur
+        run: choco install innosetup -y --no-progress
+
+      - name: Setup olustur
+        run: '& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" RoseLauncher.iss'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RoseLauncher_Setup
+          path: Output/RoseLauncher_Setup.exe
